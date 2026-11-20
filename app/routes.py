@@ -193,3 +193,30 @@ def stats():
         "total_attempts": Attempt.query.count(),
         "quizzes": quiz_stats,
     })
+
+def validate_quiz_data(data):
+    """Return an error string if quiz data is invalid, or None if valid."""
+    if not isinstance(data, dict):
+        return "Invalid JSON: root must be an object."
+    if not data.get("title") or not isinstance(data["title"], str) or not data["title"].strip():
+        return "Missing quiz title."
+
+    questions = data.get("questions")
+    if not isinstance(questions, list) or len(questions) == 0:
+        return "Quiz must have at least one question."
+
+    option_keys = ["option_a", "option_b", "option_c", "option_d"]
+    valid_answers = {"a", "b", "c", "d"}
+
+    for idx, q in enumerate(questions, start=1):
+        if not isinstance(q, dict):
+            return f"Question {idx} must be an object."
+        if not q.get("text") or not isinstance(q["text"], str) or not q["text"].strip():
+            return f"Question {idx} is missing text."
+        for key in option_keys:
+            if not q.get(key) or not isinstance(q[key], str) or not q[key].strip():
+                return f"Question {idx} is missing {key}."
+        if q.get("correct_option") not in valid_answers:
+            return f"Question {idx} has an invalid correct_option (use a, b, c, or d)."
+
+    return None
