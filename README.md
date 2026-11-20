@@ -134,3 +134,10 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) before you start.
 ## License
 
 MIT. See the [LICENSE](LICENSE) file.
+
+## Importing a Quiz via CLI
+
+You can import a quiz and its questions from a JSON file using:
+
+```bash
+flask import-quiz sample_quiz.json
