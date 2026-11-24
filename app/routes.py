@@ -159,8 +159,8 @@ def add_question(quiz_id):
         option_c=options.get("C"),
         option_d=options.get("D"),
         correct_option=correct_option,
+        explanation=get_text(data, "explanation"),
     )
-
     db.session.add(question)
     db.session.commit()
     return jsonify(question.to_dict()), 201
@@ -188,18 +188,32 @@ def submit_quiz(quiz_id):
     if isinstance(time_taken, bool) or not isinstance(time_taken, int) or time_taken < 0:
         return error("time_taken_seconds must be a positive number", 400)
 
-       # Answers are keyed by question id; unanswered questions count as wrong.
+    # Answers are keyed by question id; unanswered questions count as wrong.
     # Only valid options for each question type can receive credit.
     score = 0
+    review = []
+
     for question in quiz.questions:
         submitted_answer = answers.get(str(question.id))
         valid_options = OPTIONS.get(question.question_type, [])
 
-        if (
+        is_correct = (
             submitted_answer in valid_options
             and submitted_answer == question.correct_option
-        ):
+        )
+
+        if is_correct:
             score += 1
+
+        review.append({
+            "question_id": question.id,
+            "question": question.text,
+            "submitted_answer": submitted_answer,
+            "correct_option": question.correct_option,
+            "explanation": question.explanation,
+            "is_correct": is_correct,
+        })
+
     total = len(quiz.questions)
 
     attempt = Attempt(
@@ -219,6 +233,8 @@ def submit_quiz(quiz_id):
         "correct": score,
         "wrong": total - score,
         "time_taken_seconds": time_taken,
+        "review": review,
+
     })
 
 
