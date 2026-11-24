@@ -1,22 +1,78 @@
+
 {% extends "base.html" %}
-{% block title %}Result{% endblock %}
+{% block title %}Quiz Results{% endblock %}
 
 {% block content %}
-<h1>Your result</h1>
-<p id="message"></p>
 
-<section id="result-box" class="card" hidden>
-    <p id="result-name"></p>
-    <p id="result-score" class="big-score"></p>
-    <p id="result-correct"></p>
-    <p id="result-wrong"></p>
-    <p id="result-time"></p>
-    <div class="buttons">
-        <a id="leaderboard-link" class="button" href="#">View leaderboard</a>
-        <a id="history-link" class="button" href="{{ url_for('pages.history_page') }}">My history</a>
-        <a class="button" href="{{ url_for('pages.index') }}">More quizzes</a>
-    </div>
-</section>
+<div class="result-page">
+
+    <h1>🏆 Your Quiz Results</h1>
+
+    <p id="message" class="result-message"></p>
+
+    <section id="result-box" class="card result-card" hidden>
+
+        <h2 id="result-name"></h2>
+
+        <div class="score-section">
+            <p id="result-score" class="big-score"></p>
+            <p id="result-accuracy" class="accuracy-score"></p>
+        </div>
+
+        <div class="result-stats">
+
+            <div class="stat-card correct-stat">
+                <h3>✅ Correct</h3>
+                <p id="result-correct"></p>
+            </div>
+
+            <div class="stat-card wrong-stat">
+                <h3>❌ Wrong</h3>
+                <p id="result-wrong"></p>
+            </div>
+
+            <div class="stat-card time-stat">
+                <h3>⏱️ Time Taken</h3>
+                <p id="result-time"></p>
+            </div>
+
+        </div>
+
+        <hr>
+
+        <section class="review-section">
+
+            <h2>📋 Answer Review</h2>
+
+            <p class="review-subtitle">
+                Check your answers and understand the explanations.
+            </p>
+
+            <div id="answer-review"></div>
+
+        </section>
+
+        <div class="buttons result-buttons">
+
+            <a id="leaderboard-link" class="button" href="#">
+                View Leaderboard
+            </a>
+
+            <a id="history-link" class="button"
+               href="{{ url_for('pages.history_page') }}">
+                My History
+            </a>
+
+            <a class="button" href="{{ url_for('pages.index') }}">
+                More Quizzes
+            </a>
+
+        </div>
+
+    </section>
+
+</div>
+
 {% endblock %}
 
 {% block scripts %}
