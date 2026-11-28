@@ -207,7 +207,9 @@ def submit_quiz(quiz_id):
         return error("Answers must be an object like {\"1\": \"A\"}", 400)
     if isinstance(time_taken, bool) or not isinstance(time_taken, int) or time_taken < 0:
         return error("time_taken_seconds must be a positive number", 400)
-
+    for answer in answers.values():
+        if answer not in OPTIONS["multiple_choice"]:
+            return error("Answers must be A, B, C or D", 400)
        # Answers are keyed by question id; unanswered questions count as wrong.
     # Only valid options for each question type can receive credit.
     score = 0
