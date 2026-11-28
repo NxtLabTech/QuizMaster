@@ -84,6 +84,47 @@ def test_filter_quizzes_by_difficulty(client):
     assert quizzes[0]["title"] == "Hard One"
 
 
+def test_filter_quizzes_by_category(client):
+    create_quiz(client, "Physics Quiz", "medium", "Science")
+    create_quiz(client, "Chemistry Quiz", "easy", "Science")
+    create_quiz(client, "World History", "medium", "History")
+
+    response = client.get("/api/quizzes?category=Science")
+    assert response.status_code == 200
+    quizzes = response.get_json()
+    assert len(quizzes) == 2
+    assert all(q["category"] == "Science" for q in quizzes)
+    assert [q["title"] for q in quizzes] == ["Physics Quiz", "Chemistry Quiz"]
+
+
+def test_filter_quizzes_combined(client):
+    create_quiz(client, "Quantum Physics", "hard", "Science")
+    create_quiz(client, "Basic Biology", "easy", "Science")
+    create_quiz(client, "Ancient Rome", "hard", "History")
+    create_quiz(client, "World Capitals", "easy", "Geography")
+
+    response = client.get("/api/quizzes?category=Science&difficulty=hard")
+    assert response.status_code == 200
+    quizzes = response.get_json()
+    assert len(quizzes) == 1
+    assert quizzes[0]["title"] == "Quantum Physics"
+    assert quizzes[0]["category"] == "Science"
+    assert quizzes[0]["difficulty"] == "hard"
+
+
+def test_filter_quizzes_no_matching_results(client):
+    create_quiz(client, "Physics Quiz", "medium", "Science")
+    create_quiz(client, "World History", "easy", "History")
+
+    response = client.get("/api/quizzes?category=Art")
+    assert response.status_code == 200
+    assert response.get_json() == []
+
+    response_combined = client.get("/api/quizzes?category=Science&difficulty=hard")
+    assert response_combined.status_code == 200
+    assert response_combined.get_json() == []
+
+
 def test_get_quiz_not_found(client):
     response = client.get("/api/quizzes/999")
     assert response.status_code == 404
@@ -316,7 +357,21 @@ def test_submit_quiz_not_found(client):
     })
     assert response.status_code == 404
 
+def test_submit_quiz_rejects_invalid_answer_letter(client):
+    quiz_id = create_quiz(client)
+    add_question(client, quiz_id, "B")
+    question_id = client.get(f"/api/quizzes/{quiz_id}").get_json()["questions"][0]["id"]
 
+    response = client.post(f"/api/quizzes/{quiz_id}/submit", json={
+        "player_name": "Asha",
+        "answers": {str(question_id): "Z"},
+    })
+
+    assert response.status_code == 400
+    assert response.get_json() == {"error": "Answers must be A, B, C or D"}
+    assert client.get(f"/api/quizzes/{quiz_id}/leaderboard").get_json() == []
+
+    
 def test_submit_quiz_rate_limit(client, app):
     app.config["SUBMIT_RATE_LIMIT"] = "2 per minute"
     quiz_id = create_quiz(client)
